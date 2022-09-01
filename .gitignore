@@ -1,0 +1,13 @@
+__pycache__
+*/__pycache__/
+*/*/__pycache__/
+*/*/*/__pycache__/
+*/*/*/*/__pycache__/
+.bat
+*.bat
+.env
+*.env
+venv
+*.venv
+.idea
+.vercel
