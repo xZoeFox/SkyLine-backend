@@ -18,5 +18,4 @@ def get_db():  # for database session
         db.close()
 
 
-
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

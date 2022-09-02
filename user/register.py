@@ -7,22 +7,23 @@ from datetime import date
 from passlib.context import CryptContext
 
 router = APIRouter(
-    prefix="/register",
-    tags=["sign-up"],
-    responses={401: {"user": "Not authorized"}}
+    prefix="/register", tags=["sign-up"], responses={401: {"user": "Not authorized"}}
 )
 
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Hash password function:
 
+
 def get_password_hash(password):
     return bcrypt_context.hash(password)
 
+
 # Route for user registration:
 
+
 @router.post("/")
-async def register_user(reg: RegisterForm, db: Session = Depends(get_db)):
+async def user_registration(reg: RegisterForm, db: Session = Depends(get_db)):
     user = Users()
     user.first_name = reg.first_name
     user.last_name = reg.last_name
@@ -39,10 +40,9 @@ async def register_user(reg: RegisterForm, db: Session = Depends(get_db)):
 
     return successful_response(201)
 
+
 # Response (status & message):
 
+
 def successful_response(status_code: int):
-    return {
-        "status": 200,
-        "transaction":"Successful"
-    }
+    return {"status": 200, "transaction": "Successful"}

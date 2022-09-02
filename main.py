@@ -1,7 +1,7 @@
 from fastapi import FastAPI
-from user import register, login
+from user import register, auth
 
 app = FastAPI()
 
 app.include_router(register.router)
-app.include_router(login.router)
+app.include_router(auth.router)
