@@ -9,11 +9,13 @@ class RegisterForm(BaseModel):
     last_name: str
     email: str
     password: str
-    date_joined: date
-    birth_date: Optional[date]
-    avatar: Optional[str]
-    description: Optional[str]
-    acive: bool
+
+    class Config:
+        orm_mode = True
+
+class LoginForm(BaseModel):
+    email: str
+    password: str
 
     class Config:
         orm_mode = True
