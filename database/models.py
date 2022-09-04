@@ -1,10 +1,13 @@
 from sqlalchemy import (
+    ForeignKey,
     Boolean,
     Column,
     Integer,
     String,
     Date,
+    DateTime,
 )
+from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 
 
@@ -26,3 +29,16 @@ class Users(Base):
     avatar = Column(String(200), nullable=True)
     description = Column(String(500), nullable=True)
     active = Column(Boolean, default=True)
+
+    posts = relationship("Posts", back_populates="owner")
+
+
+class Posts(Base):
+    __tablename__ = "posts"
+    id = Column(Integer, primary_key=True)
+    content = Column(String(500), nullable=False)
+    post_date = Column(DateTime, nullable=False)
+    like_count = Column(Integer, default=0)
+    owner_id = Column(Integer, ForeignKey("users.id"))
+
+    owner = relationship("Users", back_populates="posts")

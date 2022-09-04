@@ -24,10 +24,13 @@ bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Verify password function:
 
+
 def verify_password(plain_password, hashed_password):
     return bcrypt_context.verify(plain_password, hashed_password)
 
+
 # To check if user is logged in:
+
 
 async def get_current_user(token: str = Depends(oauth2_bearer)):
     try:
@@ -43,36 +46,37 @@ async def get_current_user(token: str = Depends(oauth2_bearer)):
     except:
         raise get_user_exception()
 
+
 # Function for JWT creation:
+
 
 def create_access_token(
     email: str, user_id: int, expires_delta: Optional[timedelta] = None
 ):
 
-    encode = {"sub": email, "id": user_id}
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
         expire = datetime.utcnow() + timedelta(minutes=15)
-    encode.update({"exp": expire})
+
+    encode = {"sub": email, "id": user_id, "exp": expire}
+
     return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
+
 
 # Check if email & password match:
 
+
 def authenticate_user(email: str, password: str, db: Session = Depends(get_db)):
 
-    user = db.query(Users).filter(Users.email == email).first()
-
-    if not user:
+    if user := db.query(Users).filter(Users.email == email).first():
+        return user if verify_password(password, user.password) else False
+    else:
         return False
-
-    if not verify_password(password, user.password):
-        return False
-
-    return user
 
 
 # Route to get token by login:
+
 
 @router.post("/token")
 async def login_for_access_token(

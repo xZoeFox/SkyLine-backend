@@ -11,6 +11,7 @@ class RegisterForm(BaseModel):
     class Config:
         orm_mode = True
 
+
 class EditProfileForm(BaseModel):
     first_name: str
     last_name: str

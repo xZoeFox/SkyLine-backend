@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, APIRouter
+from fastapi import APIRouter, HTTPException, Depends
 from user.user_schemas import EditProfileForm
 from user.auth import get_current_user, get_user_exception
 from database.models import Users
@@ -12,6 +12,7 @@ router = APIRouter(
 
 # Route for profile edit:
 
+
 @router.put("/")
 async def profile_update(
     edit: EditProfileForm,
@@ -20,11 +21,7 @@ async def profile_update(
 ):
     if user is None:
         raise get_user_exception()
-    user_model = (
-        db.query(Users)
-        .filter(Users.id == user.get("id"))
-        .first()
-    )
+    user_model = db.query(Users).filter(Users.id == user.get("id")).first()
 
     if user_model is None:
         raise http_exception()
@@ -40,6 +37,7 @@ async def profile_update(
     db.commit()
 
     return successful_response(200)
+
 
 def successful_response(status_code: int):
     return {"status": 200, "transaction": "Successful"}
