@@ -31,6 +31,9 @@ class Users(Base):
     active = Column(Boolean, default=True)
 
     posts = relationship("Posts", back_populates="owner", cascade="all, delete-orphan")
+    comments = relationship(
+        "Comments", back_populates="author", cascade="all, delete-orphan"
+    )
 
 
 class Posts(Base):
@@ -42,7 +45,9 @@ class Posts(Base):
     owner_id = Column(Integer, ForeignKey("users.id"))
 
     owner = relationship("Users", back_populates="posts")
-    comments = relationship("Comments", back_populates="posts", cascade="all, delete-orphan")
+    comments = relationship(
+        "Comments", back_populates="posts", cascade="all, delete-orphan"
+    )
 
 
 class Comments(Base):
@@ -51,5 +56,7 @@ class Comments(Base):
     content = Column(String(250), nullable=False)
     comment_date = Column(DateTime, nullable=False)
     post_id = Column(Integer, ForeignKey("posts.id"))
+    author_id = Column(Integer, ForeignKey("users.id"))
 
+    author = relationship("Users", back_populates="comments")
     posts = relationship("Posts", back_populates="comments")

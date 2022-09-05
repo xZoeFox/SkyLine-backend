@@ -1,10 +1,11 @@
 from datetime import datetime
 from fastapi import APIRouter, Depends
-from posts.posts_schemas import CreatePostForm
+from posts.posts_schemas import CreatePostForm, PostView, UserView, CommentView
 from user.auth import get_current_user, get_user_exception
 from database.models import Posts
 from database.session import get_db
 from sqlalchemy.orm.session import Session
+from sqlalchemy.orm import joinedload
 
 
 router = APIRouter(
@@ -14,16 +15,44 @@ router = APIRouter(
 )
 
 # Route to get all posts (Login not required):
+"""It will show all post info, with owner fullname and id & comments with their authors info"""
 
 
 @router.get("/")
 async def read_all(
     db: Session = Depends(get_db),
 ):
-    return db.query(Posts).all()
+    return [
+        PostView(
+            post_id=result.id,
+            content=result.content,
+            post_date=result.post_date,
+            like_count=result.like_count,
+            owner=UserView(
+                user_id=result.owner.id,
+                full_name=f"{result.owner.first_name} {result.owner.last_name}".title(),
+            ),
+            comments=[
+                CommentView(
+                    comment_id=comment.id,
+                    content=comment.content,
+                    comment_date=comment.comment_date,
+                    author=UserView(
+                        user_id=comment.author.id,
+                        full_name=f"{comment.author.first_name} {comment.author.last_name}".title(),
+                    ),
+                )
+                for comment in result.comments
+            ],
+        )
+        for result in db.query(Posts)
+        .options(joinedload("owner"))
+        .options(joinedload("comments"))
+        .all()
+    ]
 
 
-# Route to logged in users posts (Login required):
+# Route to get specific (logged) users posts (Login required):
 
 
 @router.get("/user")

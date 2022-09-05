@@ -51,5 +51,6 @@ async def user_registration(reg: RegisterForm, db: Session = Depends(get_db)):
 def successful_response(status_code: int):
     return {"status": 200, "transaction": "Successful"}
 
+
 def unsuccessful_response(status_code: int):
     return {"status": 400, "transaction": "Unsuccessful"}
