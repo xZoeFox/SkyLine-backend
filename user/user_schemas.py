@@ -7,6 +7,7 @@ class RegisterForm(BaseModel):
     last_name: str
     email: str
     password: str
+    password_repeat: str
 
     class Config:
         orm_mode = True
