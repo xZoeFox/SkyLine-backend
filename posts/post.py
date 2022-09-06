@@ -6,6 +6,7 @@ from database.models import Posts
 from database.session import get_db
 from sqlalchemy.orm.session import Session
 from sqlalchemy.orm import joinedload
+from sqlalchemy import exc
 
 
 router = APIRouter(
@@ -31,6 +32,7 @@ async def read_all(
             owner=UserView(
                 user_id=result.owner.id,
                 full_name=f"{result.owner.first_name} {result.owner.last_name}".title(),
+                avatar=result.owner.avatar,
             ),
             comments=[
                 CommentView(
@@ -40,6 +42,7 @@ async def read_all(
                     author=UserView(
                         user_id=comment.author.id,
                         full_name=f"{comment.author.first_name} {comment.author.last_name}".title(),
+                        avatar=comment.author.avatar,
                     ),
                 )
                 for comment in result.comments
@@ -84,11 +87,18 @@ async def create_post(
     post_model.post_date = datetime.now()
     post_model.owner_id = user.get("id")
 
-    db.add(post_model)
-    db.commit()
-
-    return successful_response(201)
+    try:
+        db.add(post_model)
+        db.commit()
+        return successful_response(201)
+    except exc.SQLAlchemyError as e:
+        db.rollback()
+        return unsuccessful_response(400)
 
 
 def successful_response(status_code: int):
     return {"status": 200, "transaction": "Successful"}
+
+
+def unsuccessful_response(status_code: int):
+    return {"status": 400, "transaction": "Unsuccessful"}

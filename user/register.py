@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, status, HTTPException
 from database.models import Users
 from database.session import get_db
 from sqlalchemy.orm.session import Session
+from sqlalchemy import exc
 from user.user_schemas import RegisterForm
 from datetime import date
 from passlib.context import CryptContext
@@ -38,9 +39,14 @@ async def user_registration(reg: RegisterForm, db: Session = Depends(get_db)):
     user.active = True
 
     if repeat_password == reg.password:
-        db.add(user)
-        db.commit()
-        return successful_response(201)
+        try:
+            db.add(user)
+            db.commit()
+            return successful_response(201)
+
+        except exc.SQLAlchemyError as e:
+            db.rollback()
+            return unsuccessful_response(400)
     else:
         return unsuccessful_response(400)
 

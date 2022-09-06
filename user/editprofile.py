@@ -1,9 +1,11 @@
 from fastapi import APIRouter, HTTPException, Depends
+from user.register import get_password_hash
 from user.user_schemas import EditProfileForm
-from user.auth import get_current_user, get_user_exception
+from user.auth import get_current_user, get_user_exception, verify_password
 from database.models import Users
 from database.session import get_db
 from sqlalchemy.orm.session import Session
+from sqlalchemy import exc
 
 
 router = APIRouter(
@@ -26,22 +28,56 @@ async def profile_update(
     if user_model is None:
         raise http_exception()
 
-    user_model.first_name = edit.first_name
-    user_model.last_name = edit.last_name
-    user_model.email = edit.email
-    user_model.birth_date = edit.birth_date
-    user_model.avatar = edit.avatar
-    user_model.description = edit.description
+    if edit.first_name:
+        user_model.first_name = edit.first_name
 
-    db.add(user_model)
-    db.commit()
+    if edit.last_name:
+        user_model.last_name = edit.last_name
 
-    return successful_response(200)
+    if edit.email:
+        user_model.email = edit.email
+
+    if edit.birth_date:
+        user_model.birth_date = edit.birth_date
+
+    if edit.avatar:
+        user_model.avatar = edit.avatar
+
+    if edit.description:
+        user_model.description = edit.description
+
+    old_password = edit.old_password
+
+    new_password = edit.new_password
+
+    repeat_password = edit.repeat_password
+
+    if old_password and user_model.password:
+        if verify_password(old_password, user_model.password):
+            if new_password == repeat_password:
+                user_model.password = get_password_hash(new_password)
+            else:
+                return unsuccessful_response(400)
+        else:
+            return unsuccessful_response(400)
+
+    try:
+        db.add(user_model)
+        db.commit()
+        return successful_response(200)
+
+    except exc.SQLAlchemyError as e:
+        db.rollback()
+        return unsuccessful_response(400)
 
 
 def successful_response(status_code: int):
     return {"status": 200, "transaction": "Successful"}
 
 
+def unsuccessful_response(status_code: int):
+    return {"status": 400, "transaction": "Unsuccessful"}
+
+
 def http_exception():
-    return HTTPException(status_code=404, detail="Todo not found!")
+    return HTTPException(status_code=404, detail="User not found!")

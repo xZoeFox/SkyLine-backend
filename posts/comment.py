@@ -5,6 +5,7 @@ from user.auth import get_current_user, get_user_exception
 from database.models import Comments
 from database.session import get_db
 from sqlalchemy.orm.session import Session
+from sqlalchemy import exc
 
 
 router = APIRouter(
@@ -56,10 +57,17 @@ async def create_comment(
     comment_model.author_id = user.get("id")
     comment_model.post_id = comment.post_id
 
-    db.add(comment_model)
-    db.commit()
+    try:
+        db.add(comment_model)
+        db.commit()
+        return successful_response(201)
+    except exc.SQLAlchemyError as e:
+        db.rollback()
+        return unsuccessful_response(400)
 
-    return successful_response(201)
+
+def unsuccessful_response(status_code: int):
+    return {"status": 400, "transaction": "Unsuccessful"}
 
 
 def successful_response(status_code: int):

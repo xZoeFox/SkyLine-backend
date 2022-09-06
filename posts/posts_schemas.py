@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 from datetime import datetime
 
 # CreateSchemas:
@@ -26,6 +26,7 @@ class CreateCommentForm(BaseModel):
 class UserView(BaseModel):
     user_id: int
     full_name: str
+    avatar: Optional[str]
 
     class Config:
         orm_mode = True
