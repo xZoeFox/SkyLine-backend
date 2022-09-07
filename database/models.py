@@ -30,19 +30,8 @@ class Users(Base):
     description = Column(String(500), nullable=True)
     active = Column(Boolean, default=True)
 
-    posts = relationship("Posts", back_populates="owner")
-    comments = relationship("Comments", back_populates="author")
-
-class Comments(Base):
-    __tablename__ = "comments"
-    id = Column(Integer, primary_key=True)
-    content = Column(String(250), nullable=False)
-    comment_date = Column(DateTime, nullable=False)
-    post_id = Column(Integer, ForeignKey("posts.id"))
-    author_id = Column(Integer, ForeignKey("users.id"))
-
-    author = relationship("Users", back_populates="comments" , cascade="all, delete-orphan")
-    posts = relationship("Posts", back_populates="comments", cascade="all, delete-orphan")
+    posts = relationship("Posts", back_populates="owner", cascade="all, delete")
+    comments = relationship("Comments", back_populates="author", cascade="all, delete")
 
 class Posts(Base):
     __tablename__ = "posts"
@@ -50,9 +39,21 @@ class Posts(Base):
     content = Column(String(500), nullable=False)
     post_date = Column(DateTime, nullable=False)
     like_count = Column(Integer, default=0)
-    owner_id = Column(Integer, ForeignKey("users.id"))
+    owner_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
 
-    owner = relationship("Users", back_populates="posts", cascade="all, delete-orphan")
-    comments = relationship("Comments", back_populates="posts")
+    owner = relationship("Users", back_populates="posts")
+    comments = relationship("Comments", back_populates="posts", cascade="all, delete")
+
+class Comments(Base):
+    __tablename__ = "comments"
+    id = Column(Integer, primary_key=True)
+    content = Column(String(250), nullable=False)
+    comment_date = Column(DateTime, nullable=False)
+    post_id = Column(Integer, ForeignKey("posts.id", ondelete="CASCADE"))
+    author_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
+
+    author = relationship("Users", back_populates="comments")
+    posts = relationship("Posts", back_populates="comments")
+
 
 
