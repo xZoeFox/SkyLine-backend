@@ -17,6 +17,7 @@ pyasn1
 pycparser
 pydantic
 PyMySQL
+postgresql
 python-jose
 python-multipart
 rsa

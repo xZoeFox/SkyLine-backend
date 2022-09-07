@@ -12,6 +12,12 @@ class CreatePostForm(BaseModel):
         orm_mode = True
 
 
+class EditPostForm(BaseModel):
+    content: Optional[str]
+
+    class Config:
+        orm_mode = True
+
 class CreateCommentForm(BaseModel):
     content: str
     post_id: int
