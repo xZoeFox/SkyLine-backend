@@ -33,6 +33,7 @@ class Users(Base):
     posts = relationship("Posts", back_populates="owner", cascade="all, delete")
     comments = relationship("Comments", back_populates="author", cascade="all, delete")
 
+
 class Posts(Base):
     __tablename__ = "posts"
     id = Column(Integer, primary_key=True)
@@ -44,6 +45,7 @@ class Posts(Base):
     owner = relationship("Users", back_populates="posts")
     comments = relationship("Comments", back_populates="posts", cascade="all, delete")
 
+
 class Comments(Base):
     __tablename__ = "comments"
     id = Column(Integer, primary_key=True)
@@ -54,6 +56,3 @@ class Comments(Base):
 
     author = relationship("Users", back_populates="comments")
     posts = relationship("Posts", back_populates="comments")
-
-
-
