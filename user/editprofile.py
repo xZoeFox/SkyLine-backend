@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 from user.register import get_password_hash
-from user.user_schemas import EditProfileForm
+from user.user_schemas import EditProfileForm, ShowMyProfileForm, ShowProfileForm
 from user.auth import get_current_user, get_user_exception, verify_password
 from database.models import Users
 from database.session import get_db
@@ -9,8 +9,9 @@ from sqlalchemy import exc
 
 
 router = APIRouter(
-    prefix="/edit", tags=["profile"], responses={401: {"user": "Not authorized"}}
+    prefix="/profile", tags=["profile"], responses={401: {"user": "Not authorized"}}
 )
+
 
 # Route for profile edit:
 
@@ -69,6 +70,53 @@ async def profile_update(
     except exc.SQLAlchemyError as e:
         db.rollback()
         return unsuccessful_response(400)
+
+
+# Route to get (logged) user profile (Login required):
+
+
+@router.get("/myprofile")
+async def get_myprofile(
+    user: dict = Depends(get_current_user), db: Session = Depends(get_db)
+):
+
+    if user is None:
+        raise get_user_exception()
+
+    result = db.query(Users).filter(Users.id == user.get("id")).first()
+
+    return ShowMyProfileForm(
+        id=result.id,
+        first_name=result.first_name,
+        last_name=result.last_name,
+        email=result.email,
+        birth_date=result.birth_date,
+        avatar=result.avatar,
+        description=result.description,
+    )
+
+
+# Route to get specific user profile by id (Login required):
+
+
+@router.get("/{id}")
+async def get_profile(
+    id: int, user: dict = Depends(get_current_user), db: Session = Depends(get_db)
+):
+
+    if user is None:
+        raise get_user_exception()
+
+    result = db.query(Users).filter(Users.id == id).first()
+
+    return ShowProfileForm(
+        id=result.id,
+        first_name=result.first_name,
+        last_name=result.last_name,
+        birth_date=result.birth_date,
+        avatar=result.avatar,
+        description=result.description,
+    )
 
 
 def successful_response(status_code: int):
